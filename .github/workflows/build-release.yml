@@ -1,0 +1,38 @@
+name: Build Clean Release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          coverage: none
+
+      - name: Install zip tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y rsync zip unzip
+
+      - name: Ensure build script executable
+        run: chmod +x tools/build-release.sh
+
+      - name: Build clean package
+        run: ./tools/build-release.sh
+
+      - name: Upload release artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: clean-release-${{ github.ref_name }}
+          path: dist/*.zip
